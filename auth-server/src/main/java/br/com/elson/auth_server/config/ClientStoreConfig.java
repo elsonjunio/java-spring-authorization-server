@@ -46,6 +46,19 @@ public class ClientStoreConfig {
             repository.save(registeredClient);
         }
 
+        if (repository.findByClientId("automation-client") == null) {
+            RegisteredClient registeredClient = RegisteredClient
+                .withId(UUID.randomUUID().toString())
+                .clientId("automation-client")
+                .clientSecret(passwordEncoder.encode("automation-secret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("read:tasks") // escopo personalizado
+                .build();
+
+            repository.save(registeredClient);
+        }
+        
         return repository;
     }
 
