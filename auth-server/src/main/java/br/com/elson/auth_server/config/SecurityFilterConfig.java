@@ -5,28 +5,36 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 
 @Configuration
 public class SecurityFilterConfig {
 
     @Bean
     @Order(1)
-    SecurityFilterChain authServerSecurityFilter(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    	OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+    			OAuth2AuthorizationServerConfigurer.authorizationServer();
 
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class).oidc(
-                Customizer.withDefaults())
-                .and()
-                .exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(
-                        new LoginUrlAuthenticationEntryPoint("/login")))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+        authorizationServerConfigurer.oidc(Customizer.withDefaults());
 
-        return http.build();
+    	http
+    		.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+            .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+            .csrf(csrf -> csrf.ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher()))
+    		.with(authorizationServerConfigurer, (authorizationServer) ->
+    			authorizationServer
+    				.oidc(Customizer.withDefaults())	// Initialize `OidcConfigurer`
+    		)
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+            );
+
+        http.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+
+    	return http.build();
     }
 
     @Bean
