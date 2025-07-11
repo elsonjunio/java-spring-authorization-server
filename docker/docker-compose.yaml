@@ -12,7 +12,6 @@ services:
       POSTGRES_PASSWORD: S3cret
       POSTGRES_USER: postgres
       POSTGRES_DB: acl
-      DEFAULT_REDIRECT_URI: http://client-server:8080/login/oauth2/code/client-server-oidc
 
   auth-server:
     build:
@@ -27,6 +26,7 @@ services:
       DB_PASSWORD: S3cret
       JWT_PUBLIC_KEY: classpath:app.pub
       JWT_PRIVATE_KEY: classpath:app.key
+      DEFAULT_REDIRECT_URI: http://client-server:8080/login/oauth2/code/client-server-oidc
     depends_on:
       - postgres
     healthcheck:
