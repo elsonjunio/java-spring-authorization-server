@@ -15,8 +15,13 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Configuration
 public class ClientStoreConfig {
+
+    @Value("${client.redirect-uri}")
+    private String redirectUri;
 
     @Autowired 
     private PasswordEncoder passwordEncoder;
@@ -35,7 +40,7 @@ public class ClientStoreConfig {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/client-server-oidc")
+                .redirectUri(redirectUri)
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
                 .clientSettings(ClientSettings.builder()
